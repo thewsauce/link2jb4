@@ -16,7 +16,7 @@ function linkifyText(node) {
 
         // Create a clickable link element
         const link = document.createElement("a");
-        link.href = `http://example.link/${part1}-${part2}-${part2.length === 4 ? "SP" : "DG"}`;
+        link.href = `https://jobs.pooleng.com/jobs/jobs-all/view-job/${part1}-${part2}-${part2.length === 4 ? "SP" : "DG"}`;
         link.target = "_blank";
         link.textContent = match;
 
