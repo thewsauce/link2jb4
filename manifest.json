@@ -6,7 +6,7 @@
   "permissions": ["tabs"],
   "content_scripts": [
     {
-      "matches": ["https://exampleurl.location/*"],
+      "matches": ["http://pe-web3/*"],
       "js": ["content.js"]
     }
   ],
