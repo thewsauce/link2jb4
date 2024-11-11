@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "URL Generator Linkifier",
+  "version": "1.0",
+  "description": "Detects formatted numbers and makes them clickable links.",
+  "permissions": ["tabs"],
+  "content_scripts": [
+    {
+      "matches": ["https://exampleurl.location/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  }
+}
