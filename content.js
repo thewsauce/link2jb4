@@ -1,41 +1,54 @@
 // Regular expression to find patterns like "11-2222" or "11-22222"
 const formatPattern = /\b(\d{2})-(\d{4,5})\b/g;
 
+// Words to ignore if the pattern precedes them (case-insensitive)
+const ignoredWords = /(?:invoice|inv|payment link|payment link sent)/i;
+
+// Function to check if the node's text precedes ignored words
+function isPrecedingIgnoredWord(node, matchIndex, matchLength) {
+  const textAfter = node.textContent.slice(matchIndex + matchLength).trim();
+  return ignoredWords.test(textAfter.split(/\s+/)[0] || "");
+}
+
 // Function to convert matched patterns into clickable links
 function linkifyText(node) {
-  // Only process text nodes to prevent altering other HTML elements
   if (node.nodeType === Node.TEXT_NODE) {
-    const matches = node.textContent.match(formatPattern);
-    if (matches) {
+    const matches = [...node.textContent.matchAll(formatPattern)];
+    if (matches.length > 0) {
       const span = document.createElement("span");
       let lastIndex = 0;
-      
-      node.textContent.replace(formatPattern, (match, part1, part2, offset) => {
-        // Append the text before the match as plain text
-        span.appendChild(document.createTextNode(node.textContent.slice(lastIndex, offset)));
 
-        // Create a clickable link element
+      matches.forEach(match => {
+        const [matchedText, part1, part2] = match;
+        const matchIndex = match.index;
+        const matchLength = matchedText.length;
+
+        // Check if the match is preceded by ignored words
+        if (isPrecedingIgnoredWord(node, matchIndex, matchLength)) {
+          return;
+        }
+
+        // Append text before the match
+        span.appendChild(document.createTextNode(node.textContent.slice(lastIndex, matchIndex)));
+
+        // Create a clickable link
         const link = document.createElement("a");
         link.href = `https://jobs.pooleng.com/jobs/jobs-all/view-job/${part1}-${part2}-${part2.length === 4 ? "SP" : "DG"}`;
         link.target = "_blank";
-        link.textContent = match;
+        link.textContent = matchedText;
 
-        // Append the link to the span
         span.appendChild(link);
-        
-        lastIndex = offset + match.length;
+        lastIndex = matchIndex + matchLength;
       });
-      
-      // Append any remaining text after the last match
+
+      // Append remaining text
       span.appendChild(document.createTextNode(node.textContent.slice(lastIndex)));
-      
-      // Replace the original text node with the new span
       node.parentNode.replaceChild(span, node);
     }
   }
 }
 
-// Recursively scan through all text nodes in the body of the document
+// Recursively scan and process text nodes
 function scanAndLinkify(node) {
   if (node.nodeType === Node.TEXT_NODE) {
     linkifyText(node);
