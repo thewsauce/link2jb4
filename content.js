@@ -1,4 +1,4 @@
-// Regular expression to find patterns like "11-2222" or "11-22222"
+// Regular expression to find patterns like "XX-YYYY" or "XX-YYYYY"
 const formatPattern = /\b(\d{2})-(\d{4,5})\b/g;
 
 // Words to ignore if the pattern precedes them (case-insensitive)
@@ -7,12 +7,24 @@ const ignoredWords = /(?:invoice|inv|payment link|payment link sent)/i;
 // Function to check if the node's text precedes ignored words
 function isPrecedingIgnoredWord(node, matchIndex, matchLength) {
   const textBefore = node.textContent.slice(0, matchIndex).trimEnd(); // Get text before the match
-  const precedingWords = textBefore.split(/\s*[:#\s]+\s*/).pop(); // Extract the last word before any spaces/colons
+  const precedingWords = textBefore.split(/\s*[:#\s]+\s*/).pop(); // Extract the last word before spaces, colons, or #
   return ignoredWords.test(precedingWords || "");
 }
 
-// Function to convert matched patterns into clickable links
-function linkifyText(node) {
+// Function to determine the suffix for to go from Joblog 3 to New Joblog
+function getSuffix(part2Length) {
+  return part2Length === 4 ? "SP" : "DG";
+}
+
+// Function to determine the prefix to go from New Joblog to Joblog 3
+function getPrefix(part2Length) {
+  return part2Length === 5
+    ? "QuasiJobs/Detail/QuasiJobDetail.aspx?qryjobid="
+    : "SpecialJobs/Detail/SpecialJobDetail.aspx?qryjobid=";
+}
+
+// Function to create links based on the current domain
+function linkifyText(node, domainType) {
   if (node.nodeType === Node.TEXT_NODE) {
     const matches = [...node.textContent.matchAll(formatPattern)];
     if (matches.length > 0) {
@@ -34,7 +46,15 @@ function linkifyText(node) {
 
         // Create a clickable link
         const link = document.createElement("a");
-        link.href = `https://jobs.pooleng.com/jobs/jobs-all/view-job/${part1}-${part2}-${part2.length === 4 ? "SP" : "DG"}`;
+        if (domainType === "prefix") {
+          // For New Joblog to Joblog 3
+          const prefix = getPrefix(part2.length);
+          link.href = `pe-web3/${prefix}${part1}-${part2}`;
+        } else if (domainType === "suffix") {
+          // For Joblog 3 to New Joblog
+          const suffix = getSuffix(part2.length);
+          link.href = `https://jobs.pooleng.com/jobs/jobs-all/view-job/${part1}-${part2}-${suffix}`;
+        }
         link.target = "_blank";
         link.textContent = matchedText;
 
@@ -50,15 +70,23 @@ function linkifyText(node) {
 }
 
 // Recursively scan and process text nodes
-function scanAndLinkify(node) {
+function scanAndLinkify(node, domainType) {
   if (node.nodeType === Node.TEXT_NODE) {
-    linkifyText(node);
+    linkifyText(node, domainType);
   } else {
     for (const child of node.childNodes) {
-      scanAndLinkify(child);
+      scanAndLinkify(child, domainType);
     }
   }
 }
 
-// Run the linkify function on the document body
-scanAndLinkify(document.body);
+// Determine the current domain and apply the appropriate behavior
+const currentDomain = window.location.hostname;
+
+if (currentDomain === "example.page") {
+  // Apply the prefix logic
+  scanAndLinkify(document.body, "prefix");
+} else if (currentDomain === "sample.page") {
+  // Apply the suffix logic
+  scanAndLinkify(document.body, "suffix");
+}
