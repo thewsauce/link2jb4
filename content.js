@@ -83,10 +83,10 @@ function scanAndLinkify(node, domainType) {
 // Determine the current domain and apply the appropriate behavior
 const currentDomain = window.location.hostname;
 
-if (currentDomain === "example.page") {
+if (currentDomain === "https://jobs.pooleng.com/*") {
   // Apply the prefix logic
   scanAndLinkify(document.body, "prefix");
-} else if (currentDomain === "sample.page") {
+} else if (currentDomain === "http://pe-web3/*") {
   // Apply the suffix logic
   scanAndLinkify(document.body, "suffix");
 }
