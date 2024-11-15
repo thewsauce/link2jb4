@@ -6,7 +6,7 @@
   "permissions": ["tabs"],
   "content_scripts": [
     {
-      "matches": ["http://pe-web3/*"],
+      "matches": ["http://pe-web3/SpecialJobs/*","http://pe-web3/QuasiJobs/*"],
       "js": ["content.js"]
     }
   ],
