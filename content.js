@@ -6,8 +6,9 @@ const ignoredWords = /(?:invoice|inv|payment link|payment link sent)/i;
 
 // Function to check if the node's text precedes ignored words
 function isPrecedingIgnoredWord(node, matchIndex, matchLength) {
-  const textAfter = node.textContent.slice(matchIndex + matchLength).trim();
-  return ignoredWords.test(textAfter.split(/\s+/)[0] || "");
+  const textBefore = node.textContent.slice(0, matchIndex).trimEnd(); // Get text before the match
+  const precedingWords = textBefore.split(/\s*[:#\s]+\s*/).pop(); // Extract the last word before any spaces/colons
+  return ignoredWords.test(precedingWords || "");
 }
 
 // Function to convert matched patterns into clickable links
