@@ -79,10 +79,8 @@ function scanAndLinkify(node, domainType) {
     }
   }
 }
-
 // Determine the current URL and apply the appropriate behavior
 const currentURL = window.location.href;
-
 if (currentURL.startsWith("https://jobs.pooleng.com/")) {
   // Apply prefix logic for https://jobs.pooleng.com/*
   scanAndLinkify(document.body, "prefix");
@@ -90,3 +88,4 @@ if (currentURL.startsWith("https://jobs.pooleng.com/")) {
   // Apply suffix logic for http://pe-web3/*
   scanAndLinkify(document.body, "suffix");
 }
+console.log("Current URL:", currentURL);
