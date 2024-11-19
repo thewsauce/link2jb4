@@ -23,6 +23,8 @@ function getPrefix(part2Length) {
     : "SpecialJobs/Detail/SpecialJobDetail.aspx?qryjobid=";
 }
 
+let isResultGenerated = false;
+
 // Function to create links based on the current domain
 function linkifyText(node, domainType) {
   if (node.nodeType === Node.TEXT_NODE) {
@@ -49,7 +51,7 @@ function linkifyText(node, domainType) {
         if (domainType === "prefix") {
           // For New Joblog to Joblog 3
           const prefix = getPrefix(part2.length);
-          link.href = `pe-web3/${prefix}${part1}-${part2}`;
+          link.href = `http://pe-web3/${prefix}${part1}-${part2}`;
         } else if (domainType === "suffix") {
           // For Joblog 3 to New Joblog
           const suffix = getSuffix(part2.length);
@@ -65,6 +67,8 @@ function linkifyText(node, domainType) {
       // Append remaining text
       span.appendChild(document.createTextNode(node.textContent.slice(lastIndex)));
       node.parentNode.replaceChild(span, node);
+
+      isResultGenerated = true;
     }
   }
 }
@@ -79,13 +83,30 @@ function scanAndLinkify(node, domainType) {
     }
   }
 }
-// Determine the current URL and apply the appropriate behavior
-const currentURL = window.location.href;
-if (currentURL.startsWith("https://jobs.pooleng.com/")) {
-  // Apply prefix logic for https://jobs.pooleng.com/*
-  scanAndLinkify(document.body, "prefix");
-} else if (currentURL.startsWith("http://pe-web3/")) {
-  // Apply suffix logic for http://pe-web3/*
-  scanAndLinkify(document.body, "suffix");
+
+function linkifyByUrl() {
+  // Determine the current URL and apply the appropriate behavior
+  const currentURL = window.location.href;
+  if (currentURL.startsWith("https://jobs.pooleng.com/")) {
+    // Apply prefix logic for https://jobs.pooleng.com/*
+    scanAndLinkify(document.body, "prefix");
+  } else if (currentURL.startsWith("http://pe-web3/")) {
+    // Apply suffix logic for http://pe-web3/*
+    scanAndLinkify(document.body, "suffix");
+  }
 }
-console.log("Current URL:", currentURL);
+
+
+linkifyByUrl();
+
+let retriesRemaining = 10;
+// If the link wasn't generated on the first attempt, retry every 0.5 seconds, up to 10 times
+if (!isResultGenerated) {
+  const interval = setInterval(() => {
+    linkifyByUrl();
+    --retriesRemaining;
+    if (isResultGenerated || !retriesRemaining) {
+      clearInterval(interval);
+    }
+  }, 500);
+}
